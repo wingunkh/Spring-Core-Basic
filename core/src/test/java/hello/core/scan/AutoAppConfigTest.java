@@ -14,4 +14,5 @@ public class AutoAppConfigTest {
         MemberService memberService = ac.getBean(MemberService.class);
         assertThat(memberService).isInstanceOf(MemberService.class);
     }
+    // 타입 조회 시 선택된 빈이 2개 이상이기 때문에 NoUniqueBeanDefinitionException 발생
 }

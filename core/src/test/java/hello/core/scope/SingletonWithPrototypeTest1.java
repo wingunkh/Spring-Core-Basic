@@ -6,6 +6,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Scope;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Provider;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SingletonWithPrototypeTest1 {
@@ -32,21 +33,22 @@ public class SingletonWithPrototypeTest1 {
 
         ClientBean clientBean2 = ac.getBean(ClientBean.class);
         int count2 = clientBean2.logic();
-        assertThat(count2).isEqualTo(2);
+        assertThat(count2).isEqualTo(1);
     }
 
     @Scope("singleton")
     static class ClientBean {
-        private final PrototypeBean prototypeBean;
-        // 싱글톤 스코프 빈에서 프로토타입 스코프 빈을 사용하는 경우
-        // 해당 빈은 주입 시점에 스프링 컨테이너에 요청해서 새로 생성된 빈일 뿐, 사용할 때마다 새로 생성되진 않는다.
+        private Provider<PrototypeBean> prototypeBeanProvider;
+        // 외부에서 의존관계를 주입 받는게 아니라 지정된 빈을 컨테이너에서 대신 찾아주는 DL (Dependency Look-up)서비스를 제공
 
         @Autowired
-        public ClientBean(PrototypeBean prototypeBean) {
-            this.prototypeBean = prototypeBean;
+        public ClientBean(Provider<PrototypeBean> prototypeBeanProvider) {
+            this.prototypeBeanProvider = prototypeBeanProvider;
         }
 
         public int logic() {
+            PrototypeBean prototypeBean = prototypeBeanProvider.get();
+            // 항상 새로운 프로토타입 빈을 생성
             prototypeBean.addCount();
             return prototypeBean.getCount();
         }
